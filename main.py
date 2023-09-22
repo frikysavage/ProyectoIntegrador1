@@ -1,73 +1,115 @@
 import os
+import random
 from readchar import readkey, key
 
-def cadena_mapa():
-    matriz = [list(linea) for linea in cadena.split("\n")]
-    return matriz
 
-cadena = "..###\n....#\n###.#\n###..\n####."
-matriz = cadena_mapa()
+class Juego:
+    def __init__(self, mapa, pos_inicial, pos_final):
+        self.matriz = self.cargar_mapa(mapa)
+        self.pos_inicial = pos_inicial
+        self.pos_final = pos_final
+        self.pj = "P"
 
-def limpiar():
-    os.system('cls')
+    def cargar_mapa(self, mapa):
+        matriz = [list(linea) for linea in mapa.split("\n")]
+        return matriz
 
-pj = "P"
-i = 0
+    def limpiar(self):
+        os.system('cls' if os.name == 'nt' else 'clear')
 
-posinicial = [0, 0]
-posfinal = [4, 4]
+    def jugar(self):
+        while True:
+            self.limpiar()
+            print("Bienvenido al juego del laberinto, por favor ingrese su nombre")
+            nombre = input()
+            self.limpiar()
+            print(f"Hola {nombre}, este es el menú principal")
+            print("1. Jugar")
+            print("2. Salir")
+            seleccion = input()
+            if seleccion == "1":
+                self.matriz[self.pos_inicial[1]][self.pos_inicial[0]] = self.pj
+                while self.matriz[self.pos_final[1]][self.pos_final[0]] != self.pj:
+                    self.limpiar()
+                    for fila in self.matriz:
+                        print("".join(fila))
+                    k = readkey()
+                    self.mover_personaje(k)
+                self.limpiar()
+                print(f"¡Felicitaciones {nombre}, has ganado!")
+                seguir_jugando = input("¿Deseas jugar nuevamente? (1 para sí, 2 para no): ")
+                self.limpiar()
+                if seguir_jugando != "1":
+                    print(f"Hasta la próxima {nombre}")
+                    return
+            elif seleccion == "2":
+                self.limpiar()
+                print(f"Hasta la próxima {nombre}")
+                return
 
-def mainloop():
-    global posinicial, posfinal, matriz
-    
+
+    def mover_personaje(self, direccion):
+        px, py = self.pos_inicial
+        if direccion == key.DOWN:
+            if py < len(self.matriz) - 1 and self.matriz[py + 1][px] != "#":
+                self.matriz[py][px] = "."
+                self.pos_inicial = [px, py + 1]
+                self.matriz[py + 1][px] = self.pj
+        elif direccion == key.UP:
+            if py > 0 and self.matriz[py - 1][px] != "#":
+                self.matriz[py][px] = "."
+                self.pos_inicial = [px, py - 1]
+                self.matriz[py - 1][px] = self.pj
+        elif direccion == key.RIGHT:
+            if px < len(self.matriz[0]) - 1 and self.matriz[py][px + 1] != "#":
+                self.matriz[py][px] = "."
+                self.pos_inicial = [px + 1, py]
+                self.matriz[py][px + 1] = self.pj
+        elif direccion == key.LEFT:
+            if px > 0 and self.matriz[py][px - 1] != "#":
+                self.matriz[py][px] = "."
+                self.pos_inicial = [px - 1, py]
+                self.matriz[py][px - 1] = self.pj
+
+
+class JuegoArchivo(Juego):
+    def __init__(self, archivo_mapa):
+        ruta_archivo = os.path.join(os.path.dirname(__file__), archivo_mapa)
+        with open(ruta_archivo, 'r') as mapa_archivo:
+            contenido = mapa_archivo.read().splitlines()
+
+        posiciones = list(map(int, contenido[0].split()))
+        pos_inicial = [posiciones[0], posiciones[1]]
+        pos_final = [posiciones[2], posiciones[3]]
+
+        mapa = "\n".join(contenido[1:])
+
+        super().__init__(mapa, pos_inicial, pos_final)
+
+
+def main():
+    print("Bienvenido al juego del laberinto")
     while True:
-        print("Bienvenido al juego del laberinto por favor ingrese su nombre")
-        nombre = input()
-        limpiar()
-        print(f"Hola {nombre} este es el menu principal")
-        print("1.Jugar")
-        print("2.Salir")
+        print("1. Jugar con mapa predefinido")
+        print("2. Jugar con mapa aleatorio")
+        print("3. Salir")
         seleccion = input()
-        limpiar()
+
         if seleccion == "1":
-            matriz[posinicial[0]][posinicial[1]] = pj
-            while matriz[posfinal[0]][posfinal[1]] != pj:
-                for fila in matriz:
-                    print("".join(fila))
-                k = readkey()
-                if k == key.DOWN:
-                    # Mover hacia abajo
-                    if posinicial[0] < len(matriz) - 1 and matriz[posinicial[0] + 1][posinicial[1]] != "#":
-                        matriz[posinicial[0]][posinicial[1]] = "."
-                        posinicial[0] += 1
-                        matriz[posinicial[0]][posinicial[1]] = pj
-                    limpiar()
-                elif k == key.UP:
-                    # Mover hacia arriba
-                    if posinicial[0] > 0 and matriz[posinicial[0] - 1][posinicial[1]] != "#":
-                        matriz[posinicial[0]][posinicial[1]] = "."
-                        posinicial[0] -= 1
-                        matriz[posinicial[0]][posinicial[1]] = pj
-                    limpiar()
-                elif k == key.RIGHT:
-                    # Mover hacia la derecha
-                    if posinicial[1] < len(matriz[0]) - 1 and matriz[posinicial[0]][posinicial[1] + 1] != "#":
-                        matriz[posinicial[0]][posinicial[1]] = "."
-                        posinicial[1] += 1
-                        matriz[posinicial[0]][posinicial[1]] = pj
-                    limpiar()
-                elif k == key.LEFT:
-                    # Mover hacia la izquierda
-                    if posinicial[1] > 0 and matriz[posinicial[0]][posinicial[1] - 1] != "#":
-                        matriz[posinicial[0]][posinicial[1]] = "."
-                        posinicial[1] -= 1
-                        matriz[posinicial[0]][posinicial[1]] = pj
-                    limpiar()
-            print(f"Gracias por jugar {nombre}, has ganado")
+            juego = Juego(
+                "..###\n....#\n###.#\n###..\n####.", [0, 0], [4, 4])
+            juego.jugar()
             break
         elif seleccion == "2":
-            limpiar()
-            print(f"Hasta la próxima {nombre}")
+            mapa_aleatorio = random.choice(['mapa1.txt', 'mapa2.txt'])
+            juego = JuegoArchivo(mapa_aleatorio)
+            juego.jugar()
             break
+        elif seleccion == "3":
+            print("¡Hasta la próxima!")
+            return
 
-mainloop()
+
+if __name__ == "__main__":
+    main()
+
