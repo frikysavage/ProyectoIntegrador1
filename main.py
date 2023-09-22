@@ -1,6 +1,7 @@
 import os
 import random
 from readchar import readkey, key
+from functools import reduce
 
 
 class Juego:
@@ -11,7 +12,7 @@ class Juego:
         self.pj = "P"
 
     def cargar_mapa(self, mapa):
-        matriz = [list(linea) for linea in mapa.split("\n")]
+        matriz = list(map(list, mapa.split("\n")))
         return matriz
 
     def limpiar(self):
@@ -47,7 +48,6 @@ class Juego:
                 print(f"Hasta la próxima {nombre}")
                 return
 
-
     def mover_personaje(self, direccion):
         px, py = self.pos_inicial
         if direccion == key.DOWN:
@@ -76,13 +76,13 @@ class JuegoArchivo(Juego):
     def __init__(self, archivo_mapa):
         ruta_archivo = os.path.join(os.path.dirname(__file__), archivo_mapa)
         with open(ruta_archivo, 'r') as mapa_archivo:
-            contenido = mapa_archivo.read().splitlines()
+            contenido = mapa_archivo.readlines()
 
         posiciones = list(map(int, contenido[0].split()))
         pos_inicial = [posiciones[0], posiciones[1]]
         pos_final = [posiciones[2], posiciones[3]]
 
-        mapa = "\n".join(contenido[1:])
+        mapa = reduce(lambda x, y: x + y, contenido[1:])
 
         super().__init__(mapa, pos_inicial, pos_final)
 
